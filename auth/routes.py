@@ -1,34 +1,52 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token
 import boto3
 import os
+from dotenv import load_dotenv
 
-auth_bp = Blueprint("auth", __name__)
+load_dotenv()
 
-# AWS Cognito 설정
-#cognito_client = boto3.client("cognito-idp", region_name=os.getenv("AWS_REGION"))
-cognito_client = boto3.client("cognito-idp", region_name="ap-northeast-2")
+# Initialize AWS Cognito client
+cognito_client = boto3.client(
+    'cognito-idp',
+    region_name=os.getenv("AWS_REGION")
+)
 
-@auth_bp.route("/login", methods=["POST"])
-def login():
-    username = request.json.get("username")
-    password = request.json.get("password")
+auth_bp = Blueprint('auth', __name__)
 
+# User Sign-up Route
+@auth_bp.route('/signup', methods=['POST'])
+def signup():
     try:
-        # Cognito에서 사용자 인증
+        # Receive signup data
+        email = request.json.get('email')
+        password = request.json.get('password')
+        
+        # Register the user in Cognito
+        response = cognito_client.sign_up(
+            ClientId=os.getenv("COGNITO_APP_CLIENT_ID"),
+            Username=email,
+            Password=password,
+        )
+        return jsonify(response), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+# User Login Route
+@auth_bp.route('/login', methods=['POST'])
+def login():
+    try:
+        email = request.json.get('email')
+        password = request.json.get('password')
+
+        # Authenticate user in Cognito
         response = cognito_client.initiate_auth(
             ClientId=os.getenv("COGNITO_APP_CLIENT_ID"),
             AuthFlow="USER_PASSWORD_AUTH",
             AuthParameters={
-                "USERNAME": username,
+                "USERNAME": email,
                 "PASSWORD": password,
             },
         )
-        # 인증 성공 시 JWT 토큰 생성
-        access_token = create_access_token(identity=username)
-        return jsonify(access_token=access_token)
-
-    except cognito_client.exceptions.NotAuthorizedException:
-        return jsonify({"error": "Invalid credentials"}), 401
+        return jsonify(response['AuthenticationResult']), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)}), 400
