@@ -11,7 +11,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Blueprint 등록
-#app.register_blueprint(auth_bp, url_prefix="/auth")       # Cognito 인증 관련 엔드포인트
+app.register_blueprint(auth_bp, url_prefix="/auth")       # Cognito 인증 관련 엔드포인트
 app.register_blueprint(fetch_bp, url_prefix="/fetch")     # 데이터 조회 엔드포인트
 app.register_blueprint(upload_bp, url_prefix="/upload")   # 데이터 업로드 엔드포인트
 
