@@ -29,7 +29,9 @@ def fetch_crop_data():
                 return jsonify({"error": "Data not found in DynamoDB"}), 404
 
             data = response["Item"]["data"]["S"]
+            image_url = response["Item"].get("image_url", {}).get("S", None)
             json_data = json.loads(data)
+            json_data["image_url"] = image_url
             return jsonify(json_data)
         
         else:
@@ -38,7 +40,13 @@ def fetch_crop_data():
             items = response.get("Items", [])
 
             # 각 항목의 'data' 필드를 JSON 형식으로 변환하여 반환
-            all_data = [json.loads(item["data"]["S"]) for item in items]
+            all_data = []
+            for item in items:
+                data = json.loads(item["data"]["S"])
+                image_url = item.get("image_url", {}).get("S", None)  # image_url 추출
+                data["image_url"] = image_url  # image_url 추가
+                all_data.append(data)
+                
             return jsonify(all_data)
 
     except Exception as e:

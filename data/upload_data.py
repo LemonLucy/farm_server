@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from utils.dynamodb import get_dynamodb_client
-from openai_integration import analyze_image
+from data.openai_integration import analyze_image
 import json
 
 upload_bp = Blueprint("upload", __name__)

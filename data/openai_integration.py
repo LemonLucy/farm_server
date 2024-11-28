@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request,jsonify
+from flask import Flask, request,jsonify,Blueprint
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -8,16 +8,22 @@ from dotenv import load_dotenv
 load_dotenv()
 app = Flask(__name__)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+api_bp = Blueprint("api", __name__)
 
-@app.route('/analyze-image', methods=['POST'])
-def analyze_image(imageURL):
+@api_bp.route('/analyze-image', methods=['POST'])
+def analyze_image():
     try:
         #lambda에서 받은 이미지 url
-        data=request.get_json()
-        image_url=data.get('image_url')
+        #data=request.get_json()
+        #image_url=data.get('image_url')
 
-        if not image_url:
-            return jsonify({"error": "Image URL is required"}),400
+        #if not image_url:
+        #    return jsonify({"error": "Image URL is required"}),400
+
+        # 디버깅 로그
+        #print(f"Received image URL: {image_url}")
+
+        image_url = "https://mycropbucket.s3.ap-northeast-2.amazonaws.com/딸기.png"
 
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -60,7 +66,7 @@ def analyze_image(imageURL):
                         {
                             "type": "image_url",
                             "image_url": {
-                                "url": imageURL,
+                                "url": image_url,
                             },
                         },
                     ],
@@ -73,7 +79,7 @@ def analyze_image(imageURL):
         data = response.choices[0].message.content
         cleaned_data = data.replace("```json", "").replace("```", "").strip()
         json_data = eval(cleaned_data)
-
+        print(json_data)
         return json_data
     
     except Exception as e:
