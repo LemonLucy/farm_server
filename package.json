@@ -1,5 +1,9 @@
 {
   "dependencies": {
-    "firebase-admin": "^12.7.0"
+    "expo": "^52.0.17",
+    "firebase-admin": "^12.7.0",
+    "react-dom": "^19.0.0",
+    "react-native": "^0.76.3",
+    "react-native-web": "^0.19.13"
   }
 }
